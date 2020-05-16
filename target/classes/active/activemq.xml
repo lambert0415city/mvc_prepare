@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:amq="http://activemq.apache.org/schema/core"
+       xmlns:jms="http://www.springframework.org/schema/jms"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.1.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd
+        http://www.springframework.org/schema/jms
+        http://www.springframework.org/schema/jms/spring-jms-4.1.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core-5.12.1.xsd">
+
+    <context:component-scan base-package="com.cs.activedemo" />
+    <mvc:annotation-driven />
+
+<!--    传对象-->
+<!--    <bean id="connectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">-->
+<!--        <property name="brokerURL" value="${activemq.url}"/>-->
+<!--        <property name="userName" value="${activemq.username}" />-->
+<!--        <property name="password" value="${activemq.password}" />-->
+<!--        &lt;!&ndash; trustedPackages 这个属性定义信任的java包,要使用MQ传对象就要将对象对应的类所在的包加入list，不然会报错 &ndash;&gt;-->
+<!--        <property name="trustedPackages" value="true">-->
+<!--&lt;!&ndash;            <list>&ndash;&gt;-->
+<!--&lt;!&ndash;                <value>com.shu.yzy.dto</value>&ndash;&gt;-->
+<!--&lt;!&ndash;                <value>java.lang</value>&ndash;&gt;-->
+<!--&lt;!&ndash;                <value>java.util</value>&ndash;&gt;-->
+<!--&lt;!&ndash;            </list>&ndash;&gt;-->
+<!--        </property>-->
+<!--    </bean>-->
+
+<!--    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">-->
+<!--        <property name="connectionFactory" ref="connectionFactory"/>-->
+<!--    </bean>-->
+<!--    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">-->
+<!--        <property name="configuration" ref="jmsConfig"/>-->
+<!--    </bean>-->
+
+
+    <amq:connectionFactory id="amqConnectionFactory"
+                           brokerURL="tcp://127.0.0.1:61616"
+                           userName="admin"
+                           password="admin" />
+
+    <!-- 配置JMS连接工长 -->
+    <!-- 这里可以采用连接池的方式连接PooledConnectionFactoryBean -->
+    <bean id="connectionFactory"
+          class="org.springframework.jms.connection.CachingConnectionFactory">
+        <constructor-arg ref="amqConnectionFactory" />
+        <property name="sessionCacheSize" value="100" />
+    </bean>
+
+    <!-- 定义消息队列（Queue） -->
+    <bean id="demoQueueDestination" class="org.apache.activemq.command.ActiveMQQueue">
+        <!-- 设置消息队列的名字 -->
+        <constructor-arg>
+            <value>gzframe.demo</value>
+        </constructor-arg>
+    </bean>
+
+    <!-- 配置JMS模板（Queue），Spring提供的JMS工具类，它发送、接收消息。 -->
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory" />
+        <property name="defaultDestination" ref="demoQueueDestination" />
+        <property name="receiveTimeout" value="10000" />
+        <!-- true是topic，false是queue，默认是false，此处显示写出false -->
+        <property name="pubSubDomain" value="false" />
+    </bean>
+
+
+    <!-- 配置消息队列监听者（Queue） -->
+    <bean id="queueMessageListener" class="com.cs.activedemo.QueueMessageListener" />
+
+
+    <!-- 显示注入消息监听容器（Queue），配置连接工厂，监听的目标是demoQueueDestination，监听器是上面定义的监听器 -->
+        <bean id="queueListenerContainer"
+              class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+            <property name="connectionFactory" ref="connectionFactory" />
+            <property name="destination" ref="demoQueueDestination" />
+            <property name="messageListener" ref="queueMessageListener" />
+        </bean>
+
+</beans>

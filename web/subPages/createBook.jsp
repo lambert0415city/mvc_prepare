@@ -1,0 +1,129 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="utf-8" %>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>新增图书</title>
+    <link href="../statics/css/base.css" rel="stylesheet"/>
+    <link href="../statics/layui/css/layui.css" rel="stylesheet"/>
+    <link href="../statics/css/detailBook.css" rel="stylesheet"/>
+    <script src="../statics/js/jquery-3.3.1.min.js"></script>
+    <script src="../statics/layui/layui.all.js"></script>
+    <script src="../statics/js/myutil.js"></script>
+</head>
+<body>
+<div class="pw">
+    <h1>
+        新增图书信息
+    </h1>
+    <div class="container">
+        <table border = "0" class ="">
+            <tbody>
+            <tr>
+                <td>人才姓名：</td>
+                <td><input type="text" id = "bookCode" ></td>
+                <td>工作年限：</td>
+                <td><input type="text" id = "bookName"></td>
+            </tr>
+            <tr>
+                <td>所属部门：</td>
+                <td>
+                    <select name="" id="typeName">
+                        <option value="0">请选择</option>
+                    </select>
+
+                   </td>
+                <td>毕业学校：</td>
+                <td><input type="text" id = "bookAuthor"></td>
+            </tr>
+            <tr>
+                <td>个人简介：</td>
+                <td><input type="text" id = "createBy" value = "系统管理员">*</td>
+                <td>工作经历：</td>
+                <td><input type="text" id = "creationTime"></td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="4">
+                    <input type="button" value ="新增" id = "btnCreate">
+                    <input type="button" value ="返回" id = "btnBack">
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>
+
+</body>
+</html>
+<script>
+    $(function(){
+        $.ajax({
+            url:'../getDepartment',
+            type:'get',
+            dataType:'json',
+            success:function(data){
+                console.log(data);
+                if(data!=null){
+                    $("#typeName").html("<option value = 0>请选择</option>");
+                    $(data).each(function(index,item){
+                        $("#typeName").append("<option value = "+item.id+">"+item.name+"</option>")
+                    })
+                }
+            }
+        });
+
+        /*$("#creationTime").val(getLocalTimes(new Date().getTime()));*/
+
+
+        $("#btnBack").on("click",function(){
+            var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+            parent.layer.close(index);
+        });
+
+        $("#btnCreate").on("click",function(){
+            if($("#bookCode").val().trim()=="" ||
+                $("#bookName").val().trim()=="" ||
+                $("#bookAuthor").val().trim()=="" ||
+                $("#createBy").val().trim()=="" ||
+                $("#creationTime").val().trim()==""
+            ){
+                layer.msg("图书编码/图书名称/图书类型/图书作者/入库人，都不能为空！");
+            }
+            else{
+                var book = {};
+                book.name=$("#bookCode").val().trim();
+                book.workingLife=$("#bookName").val().trim();
+
+                /*选择列表 id*/
+                book.departmentId=$("#typeName").val().trim();
+                book.graduateSchool=$("#bookAuthor").val().trim();
+                book.personalProfile = $("#createBy").val().trim();
+                book.workExperience = $("#creationTime").val().trim();
+
+                $.ajax({
+                    url:"../addUser",
+                    type:'post',
+                    data:book,
+                    dataType:'json',
+                    success:function(data){
+                        console.log(data);
+                        if(data==true){
+                            layer.msg('新增成功');
+                            setTimeout(function(){
+                                window.parent.location.reload();//刷新父页面
+                                var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+                                parent.layer.close(index);
+                            },500);
+                        }
+                        else{
+                            layer.msg('新增失败');
+                        }
+                    }
+                })
+            }
+
+        })
+    })
+</script>

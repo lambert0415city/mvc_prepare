@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <!--外部引用数据库的链接地址-->
+    <properties resource="database.properties"/>
+
+
+    <!--设置mybatis的行为配置-->
+    <settings>
+        <!-- 开启mybatis的日志打印 -->
+        <setting name="logImpl" value="LOG4J"/>
+
+        <!--resultmap 自动映射配置，但是内部嵌套不能映射, Full如果有内部嵌套可以映射-->
+        <setting name="autoMappingBehavior" value="FULL"/>
+
+    </settings>
+    <!--实体类别名配置-->
+    <typeAliases>
+        <!--给com.kgc.hz.entity.Users取别名users-->
+        <package name="com.cs.pojo"/>
+    </typeAliases>
+
+    <!--配置mapper映射文件-->
+<!--    <mappers>-->
+<!--        <mapper resource="mapper/SaleMapper.xml" />-->
+<!--        <mapper resource="mapper/UserInfoMapper.xml"/>-->
+<!--    </mappers>-->
+
+    <!--数据源环境配置-->
+    <!--    <environments default="mysqldatabase">
+            <environment    id="mysqldatabase">
+                <transactionManager type="JDBC"></transactionManager>
+                <dataSource type="POOLED">
+
+                    <property name="driver" value="${driver}"/>
+                    <property name="url" value="${url}"/>
+                    <property name="username" value="${username}"/>
+                    <property name="password" value="${password}"/>
+
+                </dataSource>
+            </environment>
+        </environments>-->
+
+</configuration>
